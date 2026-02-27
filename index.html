@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spatial Form Field Association — Test Cases</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #222230;
+      --accent: #7fff6e;
+      --text: #e8e8f0;
+      --muted: #555566;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+
+    .page-header {
+      max-width: 900px;
+      margin: 0 auto 64px;
+      border-left: 3px solid var(--accent);
+      padding-left: 24px;
+    }
+
+    .page-header h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    .page-header h1 span { color: var(--accent); }
+
+    .page-header p {
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      max-width: 600px;
+    }
+
+    .test-case {
+      max-width: 900px;
+      margin: 0 auto 48px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .test-case-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .case-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      background: rgba(127,255,110,0.08);
+      padding: 2px 8px;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .case-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .case-why {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-left: auto;
+      text-align: right;
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    .form-canvas {
+      padding: 40px;
+      background: #fff;
+      color: #1a1a2e;
+    }
+
+    .form-canvas input[type="text"],
+    .form-canvas input[type="email"],
+    .form-canvas input[type="tel"],
+    .form-canvas input[type="number"],
+    .form-canvas select,
+    .form-canvas textarea {
+      border: 1.5px solid #c0c0d0;
+      border-radius: 3px;
+      padding: 7px 10px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: #1a1a2e;
+      background: #fafaff;
+      outline: none;
+    }
+
+    .form-canvas input:focus,
+    .form-canvas select:focus { border-color: #5555cc; }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #aaa;
+      border-bottom: 1px solid #e8e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    .submit-row {
+      margin-top: 24px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .submit-row button {
+      background: #3333cc;
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* CASE 1 */
+    .inline-sentence {
+      font-size: 0.95rem;
+      line-height: 3.2;
+      color: #333;
+    }
+    .inline-sentence input[type="number"] { width: 70px; text-align: center; }
+    .inline-sentence select { padding: 6px 8px; }
+
+    /* CASE 2 */
+    .group-section { margin-bottom: 24px; }
+    .group-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .field-row { display: flex; gap: 12px; align-items: center; }
+    .field-row input, .field-row select { flex: 1; }
+    .field-sep { font-size: 0.8rem; color: #aaa; white-space: nowrap; }
+
+    /* CASE 3 */
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card { border: 1.5px solid #e0e0ee; border-radius: 6px; padding: 16px; position: relative; }
+    .card-badge {
+      position: absolute; top: 12px; right: 12px;
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #9999cc; background: #f0f0ff;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .card-desc { font-size: 0.75rem; color: #aaa; margin-bottom: 20px; line-height: 1.5; padding-right: 60px; }
+    .card-field-label { font-size: 0.7rem; color: #777; margin-bottom: 4px; }
+    .card input, .card select { width: 100%; }
+
+    /* CASE 4 */
+    .radio-group { margin-bottom: 20px; }
+    .radio-group-title { font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 8px; }
+    .radio-options { display: flex; flex-direction: column; gap: 6px; }
+    .radio-option { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #444; }
+    .radio-option input[type="radio"] { width: auto; flex-shrink: 0; }
+    .radio-option input[type="text"] { flex: 1; max-width: 200px; padding: 4px 8px; font-size: 0.8rem; }
+
+    /* CASE 5 */
+    .matrix-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .matrix-table th {
+      background: #f5f5ff; padding: 8px 12px; text-align: center;
+      font-weight: 700; color: #555; font-size: 0.72rem;
+      text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid #e0e0ee;
+    }
+    .matrix-table th:first-child { text-align: left; }
+    .matrix-table td { padding: 8px 12px; border: 1px solid #e0e0ee; text-align: center; color: #333; }
+    .matrix-table td:first-child { text-align: left; font-weight: 500; }
+    .matrix-table tr:nth-child(even) td { background: #fafaff; }
+    .matrix-table input[type="radio"] { width: auto; }
+
+    /* CASE 6 */
+    .icon-form { display: flex; flex-direction: column; gap: 12px; }
+    .icon-field {
+      display: flex; align-items: center; gap: 12px;
+      border: 1.5px solid #e0e0ee; border-radius: 6px; padding: 10px 14px;
+    }
+    .icon-field .icon { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+    .icon-field input { flex: 1; border: none; background: transparent; font-size: 0.875rem; padding: 0; }
+    .icon-field input:focus { border: none; outline: none; }
+
+    /* CASE 7 */
+    .two-col-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .col-form { padding: 0 20px 0 0; }
+    .col-form:last-child { padding: 0 0 0 20px; border-left: 1px solid #e0e0ee; }
+    .form-field { margin-bottom: 16px; }
+    .form-field label {
+      display: block; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 5px;
+    }
+    .form-field input, .form-field select { width: 100%; }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Spatial Form Field<br><span>Association</span> — Test Cases</h1>
+    <p>// 7 hard test cases for the label-to-field association problem.<br>
+    // Each case targets a known failure mode of naive proximity matching.<br>
+    // Designed to stress-test LayoutLM, Firecrawl, and custom extractors.</p>
+  </header>
+
+
+  <!-- CASE 1 — Inline fragmented sentence -->
+  <section class="test-case">
+    <div class="test-case-header">
+      <span class="case-number">CASE 01</span>
+      <span class="case-title">Inline Fragmented Sentence Label</span>
+      <span class="case-why">Label is split text surrounding the field.<br>No discrete label node — just sentence fragments.</span>
+    </div>
+    <div class="form-canvas">
+      <p class="section-title">Work History</p>
+      <div class="inline-sentence">
+        I have worked for&nbsp;
+        <input type="number" name="years_experience" min="0" max="50" placeholder="0">&nbsp;
+        years in&nbsp;
+        <select name="industry">
+          <option value="">select industry</option>
+          <option>Software Engineering</option>
+          <option>Finance</option>
+          <option>Healthcare</option>
+          <option>Education</option>
+          <option>Other</option>
+        </select>
+        &nbsp;and I am currently
+        <select name="employment_status">
+          <option value="">select status</option>
+          <option>Employed full-time</option>
+          <option>Employed part-time</option>
+          <option>Freelancing</option>
+          <option>Unemployed</option>
+          <option>Student</option>
+        </select>.
+      </div>
+      <br>
+      <div class="inline-sentence">
+        My current salary is&nbsp;
+        <select name="currency">
+          <option>USD</option><option>EUR</option><option>GBP</option><option>ZAR</option>
+        </select>&nbsp;
+        <input type="number" name="salary_amount" placeholder="e.g. 85000">&nbsp;
+        per&nbsp;
+        <select name="salary_period">
+          <option>year</option><option>month</option><option>hour</option>
+        </select>.
+      </div>
+      <div class="submit-row"><button type="button">Continue</button></div>
+    </div>
+  </section>
+
+
+  <!-- CASE 2 — Shared group label -->
+  <section class="test-case">
+    <div class="test-case-header">
+      <span class="case-number">CASE 02</span>
+      <span class="case-title">Shared Group Label — Equidistant Fields</span>
+      <span class="case-why">One label equidistant from 2–4 fields.<br>Nearest-neighbor assigns it wrong or to none.</span>
+    </div>
+    <div class="form-canvas">
+      <p class="section-title">Compensation &amp; Availability</p>
+
+      <div class="group-section">
+        <div class="group-label">Salary Expectation</div>
+        <div class="field-row">
+          <input type="number" name="salary_min" placeholder="Minimum">
+          <span class="field-sep">—</span>
+          <input type="number" name="salary_max" placeholder="Maximum">
+          <select name="salary_currency">
+            <option>USD</option><option>EUR</option><option>GBP</option><option>ZAR</option>
+          </select>
+          <select name="salary_period2">
+            <option>/ year</option><option>/ month</option><option>/ hour</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="group-section">
+        <div class="group-label">Availability Window</div>
+        <div class="field-row">
+          <input type="text" name="available_from" placeholder="From (dd/mm/yyyy)">
+          <span class="field-sep">to</span>
+          <input type="text" name="available_to" placeholder="To (dd/mm/yyyy) or ongoing">
+        </div>
+      </div>
+
+      <div class="group-section">
+        <div class="group-label">Notice Period</div>
+        <div class="field-row">
+          <input type="number" name="notice_amount" placeholder="e.g. 2" style="max-width:80px">
+          <select name="notice_unit">
+            <option>weeks</option><option>months</option><option>days</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="submit-row"><button type="button">Continue</button></div>
+    </div>
+  </section>
+
+
+  <!-- CASE 3 — Label spatially distant from its field -->
+  <section class="test-case">
+    <div class="test-case-header">
+      <span class="case-number">CASE 03</span>
+      <span class="case-title">Label Distant From Its Field (Card Layout)</span>
+      <span class="case-why">Semantic label is a top-right badge.<br>Input is at bottom of card. Large spatial gap.</span>
+    </div>
+    <div class="form-canvas">
+      <p class="section-title">Skills Assessment</p>
+      <div class="card-grid">
+
+        <div class="card">
+          <span class="card-badge">Years of Experience</span>
+          <p class="card-desc">How long have you been working professionally with this technology?</p>
+          <div class="card-field-label">Python</div>
+          <input type="number" name="python_years" placeholder="e.g. 3">
+        </div>
+
+        <div class="card">
+          <span class="card-badge">Years of Experience</span>
+          <p class="card-desc">How long have you been working professionally with this technology?</p>
+          <div class="card-field-label">JavaScript</div>
+          <input type="number" name="js_years" placeholder="e.g. 3">
+        </div>
+
+        <div class="card">
+          <span class="card-badge">Proficiency Level</span>
+          <p class="card-desc">Select the level that best describes your current ability.</p>
+          <div class="card-field-label">SQL</div>
+          <select name="sql_level" style="width:100%">
+            <option value="">Select level</option>
+            <option>Beginner</option><option>Intermediate</option>
+            <option>Advanced</option><option>Expert</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <span class="card-badge">Last Used</span>
+          <p class="card-desc">When did you last use this technology in a professional context?</p>
+          <div class="card-field-label">React</div>
+          <input type="text" name="react_last_used" placeholder="e.g. Currently using">
+        </div>
+
+      </div>
+      <div class="submit-row"><button type="button">Continue</button></div>
+    </div>
+  </section>
+
+
+  <!-- CASE 4 — Repeated identical label text -->
+  <section class="test-case">
+    <div class="test-case-header">
+      <span class="case-number">CASE 04</span>
+      <span class="case-title">Repeated Identical Labels — "Other (please specify)"</span>
+      <span class="case-why">Same label text appears 3 times.<br>Each must map to a different field by context only.</span>
+    </div>
+    <div class="form-canvas">
+      <p class="section-title">Background &amp; Demographics</p>
+
+      <div class="radio-group">
+        <div class="radio-group-title">How did you hear about this position?</div>
+        <div class="radio-options">
+          <label class="radio-option"><input type="radio" name="referral_source" value="linkedin"> LinkedIn</label>
+          <label class="radio-option"><input type="radio" name="referral_source" value="indeed"> Indeed</label>
+          <label class="radio-option"><input type="radio" name="referral_source" value="referral"> Employee Referral</label>
+          <label class="radio-option"><input type="radio" name="referral_source" value="company_site"> Company Website</label>
+          <label class="radio-option">
+            <input type="radio" name="referral_source" value="other"> Other (please specify)
+            <input type="text" name="referral_source_other" placeholder="Please specify">
+          </label>
+        </div>
+      </div>
+
+      <div class="radio-group">
+        <div class="radio-group-title">What is your highest level of education?</div>
+        <div class="radio-options">
+          <label class="radio-option"><input type="radio" name="education_level" value="bachelors"> Bachelor's Degree</label>
+          <label class="radio-option"><input type="radio" name="education_level" value="masters"> Master's Degree</label>
+          <label class="radio-option"><input type="radio" name="education_level" value="phd"> PhD / Doctorate</label>
+          <label class="radio-option">
+            <input type="radio" name="education_level" value="other"> Other (please specify)
+            <input type="text" name="education_level_other" placeholder="Please specify">
+          </label>
+        </div>
+      </div>
+
+      <div class="radio-group">
+        <div class="radio-group-title">What is your preferred work arrangement?</div>
+        <div class="radio-options">
+          <label class="radio-option"><input type="radio" name="work_arrangement" value="remote"> Fully Remote</label>
+          <label class="radio-option"><input type="radio" name="work_arrangement" value="hybrid"> Hybrid</label>
+          <label class="radio-option"><input type="radio" name="work_arrangement" value="onsite"> On-site</label>
+          <label class="radio-option">
+            <input type="radio" name="work_arrangement" value="other"> Other (please specify)
+            <input type="text" name="work_arrangement_other" placeholder="Please specify">
+          </label>
+        </div>
+      </div>
+
+      <div class="submit-row"><button type="button">Continue</button></div>
+    </div>
+  </section>
+
+
+  <!-- CASE 5 — Matrix / table layout -->
+  <section class="test-case">
+    <div class="test-case-header">
+      <span class="case-number">CASE 05</span>
+      <span class="case-title">Matrix Table — Dual-Axis Labels</span>
+      <span class="case-why">Each field requires TWO labels: row + column.<br>Neither alone identifies the field. Both are needed.</span>
+    </div>
+    <div class="form-canvas">
+      <p class="section-title">Self-Assessment</p>
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Skill / Competency</th>
+            <th>No Experience</th>
+            <th>Beginner</th>
+            <th>Intermediate</th>
+            <th>Advanced</th>
+            <th>Expert</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Project Management</td>
+            <td><input type="radio" name="skill_pm" value="0"></td>
+            <td><input type="radio" name="skill_pm" value="1"></td>
+            <td><input type="radio" name="skill_pm" value="2"></td>
+            <td><input type="radio" name="skill_pm" value="3"></td>
+            <td><input type="radio" name="skill_pm" value="4"></td>
+          </tr>
+          <tr>
+            <td>Data Analysis</td>
+            <td><input type="radio" name="skill_data" value="0"></td>
+            <td><input type="radio" name="skill_data" value="1"></td>
+            <td><input type="radio" name="skill_data" value="2"></td>
+            <td><input type="radio" name="skill_data" value="3"></td>
+            <td><input type="radio" name="skill_data" value="4"></td>
+          </tr>
+          <tr>
+            <td>Team Leadership</td>
+            <td><input type="radio" name="skill_leadership" value="0"></td>
+            <td><input type="radio" name="skill_leadership" value="1"></td>
+            <td><input type="radio" name="skill_leadership" value="2"></td>
+            <td><input type="radio" name="skill_leadership" value="3"></td>
+            <td><input type="radio" name="skill_leadership" value="4"></td>
+          </tr>
+          <tr>
+            <td>Client Communication</td>
+            <td><input type="radio" name="skill_comms" value="0"></td>
+            <td><input type="radio" name="skill_comms" value="1"></td>
+            <td><input type="radio" name="skill_comms" value="2"></td>
+            <td><input type="radio" name="skill_comms" value="3"></td>
+            <td><input type="radio" name="skill_comms" value="4"></td>
+          </tr>
+          <tr>
+            <td>Technical Writing</td>
+            <td><input type="radio" name="skill_writing" value="0"></td>
+            <td><input type="radio" name="skill_writing" value="1"></td>
+            <td><input type="radio" name="skill_writing" value="2"></td>
+            <td><input type="radio" name="skill_writing" value="3"></td>
+            <td><input type="radio" name="skill_writing" value="4"></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="submit-row"><button type="button">Continue</button></div>
+    </div>
+  </section>
+
+
+  <!-- CASE 6 — Icon-only labels -->
+  <section class="test-case">
+    <div class="test-case-header">
+      <span class="case-number">CASE 06</span>
+      <span class="case-title">Icon-Only Labels — No Visible Text Label</span>
+      <span class="case-why">Label conveyed by icon + aria-label only.<br>Text-based extractors see no label at all.</span>
+    </div>
+    <div class="form-canvas">
+      <p class="section-title">Contact &amp; Social</p>
+      <div class="icon-form">
+        <div class="icon-field">
+          <span class="icon" title="Full Name">👤</span>
+          <input type="text" name="full_name" aria-label="Full Name" placeholder="Full Name">
+        </div>
+        <div class="icon-field">
+          <span class="icon" title="Email Address">✉️</span>
+          <input type="email" name="email" aria-label="Email Address" placeholder="Email Address">
+        </div>
+        <div class="icon-field">
+          <span class="icon" title="Phone Number">📞</span>
+          <input type="tel" name="phone" aria-label="Phone Number" placeholder="Phone Number">
+        </div>
+        <div class="icon-field">
+          <span class="icon" title="LinkedIn Profile URL">💼</span>
+          <input type="text" name="linkedin_url" aria-label="LinkedIn Profile URL" placeholder="LinkedIn Profile URL">
+        </div>
+        <div class="icon-field">
+          <span class="icon" title="GitHub Profile URL">🐙</span>
+          <input type="text" name="github_url" aria-label="GitHub Profile URL" placeholder="GitHub Profile URL">
+        </div>
+        <div class="icon-field">
+          <span class="icon" title="Portfolio URL">🌐</span>
+          <input type="text" name="portfolio_url" aria-label="Personal Website or Portfolio" placeholder="Portfolio / Website URL">
+        </div>
+      </div>
+      <div class="submit-row"><button type="button">Continue</button></div>
+    </div>
+  </section>
+
+
+  <!-- CASE 7 — Two columns, crossing proximity -->
+  <section class="test-case">
+    <div class="test-case-header">
+      <span class="case-number">CASE 07</span>
+      <span class="case-title">Two-Column Layout — Cross-Column Proximity Trap</span>
+      <span class="case-why">Right column's label is spatially closer to the<br>left column's field than to its own field.</span>
+    </div>
+    <div class="form-canvas">
+      <p class="section-title">Personal Details</p>
+      <div class="two-col-form">
+
+        <div class="col-form">
+          <div class="form-field">
+            <label for="first_name">First Name</label>
+            <input type="text" id="first_name" name="first_name" placeholder="e.g. Amara">
+          </div>
+          <div class="form-field">
+            <label for="last_name">Last Name</label>
+            <input type="text" id="last_name" name="last_name" placeholder="e.g. Osei">
+          </div>
+          <div class="form-field">
+            <label for="date_of_birth">Date of Birth</label>
+            <input type="text" id="date_of_birth" name="date_of_birth" placeholder="dd / mm / yyyy">
+          </div>
+          <div class="form-field">
+            <label for="nationality">Nationality</label>
+            <select id="nationality" name="nationality">
+              <option value="">Select nationality</option>
+              <option>South African</option><option>Nigerian</option>
+              <option>Kenyan</option><option>American</option>
+              <option>British</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-form">
+          <div class="form-field">
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" placeholder="e.g. Johannesburg">
+          </div>
+          <div class="form-field">
+            <label for="country">Country</label>
+            <select id="country" name="country">
+              <option value="">Select country</option>
+              <option>South Africa</option><option>Nigeria</option>
+              <option>Kenya</option><option>United States</option>
+              <option>United Kingdom</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="postal_code">Postal Code</label>
+            <input type="text" id="postal_code" name="postal_code" placeholder="e.g. 2196">
+          </div>
+          <div class="form-field">
+            <label for="work_authorization">Work Authorization</label>
+            <select id="work_authorization" name="work_authorization">
+              <option value="">Select status</option>
+              <option>Citizen</option>
+              <option>Permanent Resident</option>
+              <option>Work Visa (sponsored)</option>
+              <option>Require Sponsorship</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+      <div class="submit-row"><button type="button">Submit Application</button></div>
+    </div>
+  </section>
+
+</body>
+</html>
